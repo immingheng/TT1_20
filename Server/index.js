@@ -255,6 +255,23 @@ app.delete("/orderitem/delete/:customerid/:productid", async (req, res) => {
         console.log(error.message)        
     }
 });
+
+// POST: Checkout order, update status from pending(0) to purchased(1)
+app.post("/checkoutOrder/:orderid", async (req, res) => {
+    try {
+        const orderid = req.params.orderid
+        pool.query(`Update orders SET status = 1, created_at = current_timestamp  WHERE id = ${orderid}`, (error, results) => {
+            if (error) {
+                console.log(error)
+                res.status(400).json(error)
+            } else {
+                res.status(200).json("ok")
+            }
+        })
+    } catch (error) {
+        console.log(error.message)        
+    }
+});
 // Need a method to check if user is logged in
 
 
