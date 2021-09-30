@@ -235,13 +235,22 @@ app.get("/orderitem", async (req, res) => {
 });
 
 // POST: Delete from the OrderItem table
-app.get("/orderitem/delete/:id", async (req, res) => {
+app.delete("/orderitem/delete/:customerid/:productid", async (req, res) => {
     try {
-        const { id } = req.params
-        // SQL COMMAND: DELETE FROM table WHERE condition --> need to check
-        const todo = await pool.query("DELETE FROM order_item WHERE id = $id", [id]);
-        
-        console.log("Item Deleted")
+        const customerid = req.params.customerid
+        const productid = req.params.productid
+        pool.query(`SELECT id FROM orders WHERE customer_id = ${customerid} AND status = 0`, (error, results) => {
+            orderid = results.rows[0].id 
+            pool.query(`DELETE FROM order_item WHERE product_id = ${productid} AND order_id = ${orderid} `, (error, results) => {
+                if (error) {
+                    console.log(error)
+                    res.status(400).json(error)
+                } else {
+                    res.status(200).json(results.rows)
+                    console.log("Item Deleted")
+                }
+            })
+        })
     } catch (error) {
         console.log(error.message)        
     }
