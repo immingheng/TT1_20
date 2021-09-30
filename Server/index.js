@@ -140,12 +140,13 @@ app.post("/createOrder/:customerid", async(req, res) => {
 })
 
 // POST: Insert products added from frontend cart into database
-app.post("/add/:customerid/:productid/:qty", async (req, res) => {
+app.post("/add", async (req, res) => {
     try {
-
-        const customerid = req.params.customerid
-        const productid = req.params.productid
-        const qty = req.params.qty
+        const { customerid, productid, qty } = req?.body;
+        // const customerid = req.params.customerid
+        // const productid = req.params.productid
+        // const qty = req.params.qty
+        console.log(customerid, productid, qty)
 
         pool.query(`SELECT price FROM product WHERE id = ${productid} `, (error, results) => {
             if (error) {
