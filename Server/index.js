@@ -267,6 +267,22 @@ app.post("/checkoutOrder/:orderid", async (req, res) => {
                 res.status(400).json(error)
             } else {
                 res.status(200).json("ok")
+                pool.query(`SELECT * FROM order_item WHERE order_id = ${orderid}`, (error, results) => {
+                    for (let index in results.rows) {
+                        data = results.rows[index]
+                        var productId = data.product_id
+                        pool.query(`SELECT * FROM product WHERE id = ${productId}`, (error, results) => {
+                            if (error) {
+                                console.log(error)
+                                res.status(400).json(error)
+                            }
+                            var currentQty = results.rows[0].qty
+                            var newQty = currentQty - parseInt(data.product_qty)
+                            console.log()
+                            pool.query(`UPDATE product SET qty = ${newQty} WHERE id = ${productId}`);
+                        })
+                    }
+                })
             }
         })
     } catch (error) {
