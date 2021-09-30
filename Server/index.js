@@ -9,7 +9,8 @@ const e = require("express");
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'DBSMarketplace',
+    // database: 'DBSMarketplace',
+    database: 'dbsmarketplace',
     password: 'password',
     port: 5432,
   })
@@ -32,6 +33,32 @@ app.use(
         saveUninitialized: true,
     })
 );
+
+/** ------------------------------------- AUTHENTICATION ------------------------------------- */
+
+// POST: Check user ## UNCOMPLETE
+app.post("/login", async (req, res) => {
+    try {
+        const { username, password } = req?.body;
+
+        // SQL COMMAND: SELECT * FROM <table>
+        const searchCount = await pool.query("SELECT COUNT(*) FROM customer WHERE username = $1 AND password = $2", [username, password]);
+        
+        const { count } = searchCount.rows[0];
+
+        if (parseInt(count) > 0){
+            // This is bad, passing password to the front
+            const user = await pool.query("SELECT * FROM customer WHERE username = $1 AND password = $2", [username, password]);
+
+            res.json(user.rows[0]) 
+        } else {
+            res.json(false) // Send false if count = 0
+        }
+
+    } catch (error) {
+        console.log(error.message)
+    }
+});
 
 /** ------------------------------------- ROUTES ------------------------------------- */
 
