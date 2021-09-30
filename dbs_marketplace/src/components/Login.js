@@ -2,6 +2,8 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import AppBar from 'material-ui/AppBar';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
+import axios from 'axios'
+
 import {Component} from 'react';
 class Login extends Component {
 constructor(props){
@@ -12,6 +14,23 @@ constructor(props){
   }
  }
 render() {
+
+  const handleLogin = (username, password) => {
+    axios.post(`http://localhost:4000/login`, {
+            username: username,
+            password: password,
+        }, {
+            withCredentials: true
+        }).then( res => {
+            if (res.data.id){
+              window.location.href = "/product";
+            }
+            console.log(res.data);
+        }).catch( err => {
+            console.log(err)
+        });
+  }
+  
     return (
       <div>
         <MuiThemeProvider>
@@ -32,7 +51,7 @@ render() {
                onChange = {(event,newValue) => this.setState({password:newValue})}
                />
              <br/>
-             <RaisedButton label="Submit" primary={true} style={style}/>
+             <RaisedButton label="Submit" primary={true} style={style} onClick={() => handleLogin(this.state.username, this.state.password)}/>
          </div>
          </MuiThemeProvider>
       </div>

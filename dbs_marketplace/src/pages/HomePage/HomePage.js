@@ -1,4 +1,3 @@
-import "./ProductPage.css"
 import React from 'react'
 import "./HomePage.css"
 

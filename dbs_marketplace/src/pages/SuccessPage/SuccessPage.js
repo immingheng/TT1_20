@@ -4,7 +4,9 @@ import "./SuccessPage.css"
 export default function SuccessPage() {
     return (
         <div>
-            <h1>Success Page</h1>
+            <h1>Order Complete</h1>
+            <p>Your order has been place successfully</p>
+            
         </div>
     )
 }
