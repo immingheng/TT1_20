@@ -3,7 +3,15 @@ const cors = require("cors");
 const session = require("express-session");
 
 // Import DB
-const pool = require("./app/config/db.config")
+const Pool = require('pg').Pool
+const pool = new Pool({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'DBSMarketplace',
+    password: 'password',
+    port: 5432,
+  })
+// const pool = require("./app/config/db.config")
 // import pool from "./app/config"
 console.log(pool)
 
