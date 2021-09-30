@@ -259,6 +259,28 @@ app.delete("/orderitem/delete/:customerid/:productid", async (req, res) => {
 // Need a method to check if user is logged in
 
 
+// Get cart grand total
+// POST: Delete from the OrderItem table
+app.get("/grandtotal/:customerid", async (req, res) => {
+    try {
+
+        pool.query(` SELECT SUM(total_price) FROM order_item`, (error, results) => {
+            total = results.rows[0].id 
+            pool.query(`DELETE FROM order_item WHERE product_id = ${productid} AND order_id = ${orderid} `, (error, results) => {
+                if (error) {
+                    console.log(error)
+                    res.status(400).json(error)
+                } else {
+                    res.status(200).json(results.rows)
+                    console.log("Item Deleted")
+                }
+            })
+        })
+    } catch (error) {
+        console.log(error.message)        
+    }
+});
+
 /** SERVER LISTEN AT PORT 4000 */
 
 app.listen(4000, () => {
