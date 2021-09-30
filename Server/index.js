@@ -257,6 +257,22 @@ app.delete("/orderitem/delete/:customerid/:productid", async (req, res) => {
     }
 });
 
+app.get("/getgrandtotal/:customerid", async (req, res) => {
+    try {
+        const customerid = req.params.customerid
+        pool.query(`SELECT id FROM orders WHERE customer_id = ${customerid} AND status = 0`, (error, results) => {
+            console.log(results.rows)
+            orderid = results.rows[0].id 
+            pool.query(`SELECT sum(total_price) FROM order_item where order_id = ${orderid}`, (error, results) => {
+                res.status(200).json(results.rows[0])
+            })
+        })
+        
+    } catch (error) {
+        console.log(error.message)        
+    }
+});
+
 // POST: Checkout order, update status from pending(0) to purchased(1)
 app.post("/checkoutOrder/:orderid", async (req, res) => {
     try {
