@@ -256,6 +256,55 @@ app.delete("/orderitem/delete/:customerid/:productid", async (req, res) => {
         console.log(error.message)        
     }
 });
+
+app.get("/getgrandtotal/:customerid", async (req, res) => {
+    try {
+        const customerid = req.params.customerid
+        pool.query(`SELECT id FROM orders WHERE customer_id = ${customerid} AND status = 0`, (error, results) => {
+            console.log(results.rows)
+            orderid = results.rows[0].id 
+            pool.query(`SELECT sum(total_price) FROM order_item where order_id = ${orderid}`, (error, results) => {
+                res.status(200).json(results.rows[0])
+            })
+        })
+        
+    } catch (error) {
+        console.log(error.message)        
+    }
+});
+
+// POST: Checkout order, update status from pending(0) to purchased(1)
+app.post("/checkoutOrder/:orderid", async (req, res) => {
+    try {
+        const orderid = req.params.orderid
+        pool.query(`Update orders SET status = 1, created_at = current_timestamp  WHERE id = ${orderid}`, (error, results) => {
+            if (error) {
+                console.log(error)
+                res.status(400).json(error)
+            } else {
+                res.status(200).json("ok")
+                pool.query(`SELECT * FROM order_item WHERE order_id = ${orderid}`, (error, results) => {
+                    for (let index in results.rows) {
+                        data = results.rows[index]
+                        var productId = data.product_id
+                        pool.query(`SELECT * FROM product WHERE id = ${productId}`, (error, results) => {
+                            if (error) {
+                                console.log(error)
+                                res.status(400).json(error)
+                            }
+                            var currentQty = results.rows[0].qty
+                            var newQty = currentQty - parseInt(data.product_qty)
+                            console.log()
+                            pool.query(`UPDATE product SET qty = ${newQty} WHERE id = ${productId}`);
+                        })
+                    }
+                })
+            }
+        })
+    } catch (error) {
+        console.log(error.message)        
+    }
+});
 // Need a method to check if user is logged in
 
 
