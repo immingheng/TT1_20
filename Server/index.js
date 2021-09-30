@@ -5,6 +5,7 @@ const session = require("express-session");
 // Import DB
 const Pool = require('pg').Pool;
 const { response } = require("express");
+const e = require("express");
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
@@ -145,13 +146,33 @@ app.post("/add/:customerid/:productid/:qty", async (req, res) => {
                             })
                         })        
                     }
-                    pool.query(`INSERT INTO order_item(product_id, order_id, product_qty, total_price) VALUES (${productid}, ${orderid}, ${qty}, ${total_price})`, (error, results) => {
+                    pool.query(`SELECT product_qty FROM order_item WHERE product_id = ${productid} AND order_id = ${orderid}`, (error, results) => {
                         if (error) {
                             console.log(error)
-                            res.status(400).json(error)
-                        } else {
-                            res.status(200).json(results.rows)
                         }
+                        if (results.rows.length != 0) {
+                            var newQty = results.rows[0].product_qty + parseInt(qty)
+                            const total_price = qty * price
+                            console.log(total_price)
+                            pool.query(`UPDATE order_item SET product_qty = ${newQty}, total_price = ${total_price} WHERE order_id = ${orderid} AND product_id = ${productid}`, (error, results) => {
+                                if (error) {
+                                    console.log(error)
+                                    res.status(400).json(error)
+                                } else {
+                                    res.status(200).json(results.rows)
+                                }
+                            })
+                        } else {
+                            pool.query(`INSERT INTO order_item(product_id, order_id, product_qty, total_price) VALUES (${productid}, ${orderid}, ${qty}, ${total_price})`, (error, results) => {
+                                if (error) {
+                                    console.log(error)
+                                    res.status(400).json(error)
+                                } else {
+                                    res.status(200).json(results.rows)
+                                }
+                            })
+                        }
+                        // res.status(200).json("ok")
                     })
                 })
                 
