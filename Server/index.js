@@ -69,8 +69,34 @@ app.get("/category", async (req, res) => {
 });
 
 // GET: Return a list of all products from the OrderItem table
+app.get("/orderitem", async (req, res) => {
+    try {
 
-// POST: Insert products added from frontend cart into database
+        // SQL COMMAND: SELECT * FROM <table>
+        const allOrderItems = await pool.query("SELECT * FROM order_item");
+
+        res.json(allOrderItems.rows) // Only return the first entry from res["rows"] instead of returning everything
+
+    } catch (error) {
+        console.log(error.message)
+    }
+});
+
+// GET: Insert products added from frontend cart into database
+app.get("/add/:id", async (req, res) => {
+    try {
+
+        const { id } = req.params;
+               
+        // SQL COMMAND: INSERT INTO table2 SELECT * FROM table1 WHERE condition; <--- jason: need help on this, not very familar w sql
+        const todo = await pool.query("INSERT INTO order_item (product_id, order_id, product_qty, total_price) SELECT <somethinghere> FROM product WHERE id = $id", [id]);
+
+        res.json(todo.rows[0]);
+
+    } catch (error) {
+        console.log(error.message)
+    }
+});
 
 // POST: Delete from the OrderItem table
 
