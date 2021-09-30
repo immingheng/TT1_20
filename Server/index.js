@@ -125,7 +125,7 @@ app.post("/add/:customerid/:productid/:qty", async (req, res) => {
                 console.log(error)
             }
             const price = results.rows[0].price
-            const total_price = qty * price
+            const total_price = parseFloat(qty) * parseFloat(price)
             var orderid;
             if (results.rows.length != 0) { 
                 pool.query(`SELECT id FROM orders WHERE customer_id = ${customerid} AND status = 0`, (error, results) => {
@@ -152,9 +152,9 @@ app.post("/add/:customerid/:productid/:qty", async (req, res) => {
                         }
                         if (results.rows.length != 0) {
                             var newQty = results.rows[0].product_qty + parseInt(qty)
-                            const total_price = qty * price
-                            console.log(total_price)
-                            pool.query(`UPDATE order_item SET product_qty = ${newQty}, total_price = ${total_price} WHERE order_id = ${orderid} AND product_id = ${productid}`, (error, results) => {
+                            var newTotalPrice = parseFloat(newQty) * parseFloat(price)
+                            console.log(newTotalPrice.toFixed(2))
+                            pool.query(`UPDATE order_item SET product_qty = ${newQty}, total_price = ${newTotalPrice.toFixed(2)} WHERE order_id = ${orderid} AND product_id = ${productid}`, (error, results) => {
                                 if (error) {
                                     console.log(error)
                                     res.status(400).json(error)
