@@ -3,7 +3,8 @@ const cors = require("cors");
 const session = require("express-session");
 
 // Import DB
-const Pool = require('pg').Pool
+const Pool = require('pg').Pool;
+const { response } = require("express");
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
@@ -82,16 +83,82 @@ app.get("/orderitem", async (req, res) => {
     }
 });
 
-// GET: Insert products added from frontend cart into database
-app.get("/add/:id", async (req, res) => {
+// GET: Return a order with status pending
+app.get("/getOrder/:customerid", async(req, res) => {
+    try {
+        const customerid = req.params.customerid
+        pool.query(`SELECT id FROM orders WHERE customer_id = ${customerid} AND status = 0`, (error, results) => {
+            if (error) {
+                console.log("error")
+                console.log(error)
+            }
+            res.status(200).json(results.rows)
+        })
+    } catch (error) {
+        console.log(error.message)
+    }
+})
+
+app.post("/createOrder/:customerid", async(req, res) => {
+    try {
+        const customerid = req.params.customerid
+        const order = await pool.query(`INSERT INTO orders (customer_id, status) VALUES (${customerid}, 0)`)
+        // orderid = order.rows[0].id
+        // console.log(orderid)
+        res.status(200).json(order)
+    } catch (error) {
+        console.log(error.message)
+    }
+})
+
+// POST: Insert products added from frontend cart into database
+app.post("/add/:customerid/:productid/:qty", async (req, res) => {
     try {
 
-        const { id } = req.params;
-               
-        // SQL COMMAND: INSERT INTO table2 SELECT * FROM table1 WHERE condition; <--- jason: need help on this, not very familar w sql
-        const todo = await pool.query("INSERT INTO order_item (product_id, order_id, product_qty, total_price) SELECT <somethinghere> FROM product WHERE id = $id", [id]);
+        const customerid = req.params.customerid
+        const productid = req.params.productid
+        const qty = req.params.qty
 
-        res.json(todo.rows[0]);
+        pool.query(`SELECT price FROM product WHERE id = ${productid} `, (error, results) => {
+            if (error) {
+                console.log(error)
+            }
+            const price = results.rows[0].price
+            const total_price = qty * price
+            var orderid;
+            if (results.rows.length != 0) { 
+                pool.query(`SELECT id FROM orders WHERE customer_id = ${customerid} AND status = 0`, (error, results) => {
+                    if (error) {
+                        console.log(error)
+                    }
+                    if (results.rows.length != 0) {
+                        orderid = results.rows[0].id  
+                    } else {
+                        const order = await pool.query(`INSERT INTO orders (customer_id, status) VALUES (${customerid}, 0)`, (error, results) => {                          
+                            pool.query(`SELECT id FROM orders WHERE customer_id = ${customerid} AND status = 0`, (error, results) => {
+                                if (error) {
+                                    console.log(error)
+                                }
+                                if (results.rows.length != 0) {
+                                    orderid = results.rows[0].id  
+                                } 
+                            })
+                        })        
+                    }
+                    pool.query(`INSERT INTO order_item(product_id, order_id, product_qty, total_price) VALUES (${productid}, ${orderid}, ${qty}, ${total_price})`, (error, results) => {
+                        if (error) {
+                            console.log(error)
+                            res.status(400).json(error)
+                        } else {
+                            res.status(200).json(results.rows)
+                        }
+                    })
+                })
+                
+            } else {
+                res.status(400).json(error)
+            }
+        })
 
     } catch (error) {
         console.log(error.message)
