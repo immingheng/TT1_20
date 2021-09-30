@@ -124,7 +124,17 @@ app.get("/add/:id", async (req, res) => {
 });
 
 // POST: Delete from the OrderItem table
-
+app.get("/orderitem/delete/:id", async (req, res) => {
+    try {
+        const { id } = req.params
+        // SQL COMMAND: DELETE FROM table WHERE condition --> need to check
+        const todo = await pool.query("DELETE FROM order_item WHERE id = $id", [id]);
+        
+        console.log("Item Deleted")
+    } catch (error) {
+        console.log(error.message)        
+    }
+});
 // Need a method to check if user is logged in
 
 
