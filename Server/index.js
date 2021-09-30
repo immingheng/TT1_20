@@ -2,18 +2,17 @@ const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
 
+
 // Import DB
 const Pool = require('pg').Pool
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
+    // database: 'dbsmarketplace',
     database: 'DBSMarketplace',
     password: 'password',
     port: 5432,
-  })
-// const pool = require("./app/config/db.config")
-// import pool from "./app/config"
-console.log(pool)
+  });
 
 /** ------------------------------------- EXPRESS ------------------------------------- */
 
@@ -30,6 +29,32 @@ app.use(
         saveUninitialized: true,
     })
 );
+
+/** ------------------------------------- AUTHENTICATION ------------------------------------- */
+
+// GET: Check user ## UNCOMPLETE
+app.post("/checkuser", async (req, res) => {
+    try {
+        const { username, password } = req?.body;
+
+        // SQL COMMAND: SELECT * FROM <table>
+        const searchCount = await pool.query("SELECT COUNT(*) FROM customer WHERE username = $1 AND password = $2", [username, password]);
+        
+        const { count } = searchCount.rows[0];
+
+        if (parseInt(count) > 0){
+            // This is bad, passing password to the front
+            const user = await pool.query("SELECT * FROM customer WHERE username = $1 AND password = $2", [username, password]);
+
+            res.json(user.rows[0]) 
+        } else {
+            res.json(false) // Send false if count = 0
+        }
+
+    } catch (error) {
+        console.log(error.message)
+    }
+});
 
 /** ------------------------------------- ROUTES ------------------------------------- */
 
