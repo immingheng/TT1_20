@@ -134,7 +134,7 @@ app.post("/add/:customerid/:productid/:qty", async (req, res) => {
                     if (results.rows.length != 0) {
                         orderid = results.rows[0].id  
                     } else {
-                        const order = await pool.query(`INSERT INTO orders (customer_id, status) VALUES (${customerid}, 0)`, (error, results) => {                          
+                        pool.query(`INSERT INTO orders (customer_id, status) VALUES (${customerid}, 0)`, (error, results) => {                          
                             pool.query(`SELECT id FROM orders WHERE customer_id = ${customerid} AND status = 0`, (error, results) => {
                                 if (error) {
                                     console.log(error)
@@ -167,6 +167,37 @@ app.post("/add/:customerid/:productid/:qty", async (req, res) => {
 
 // POST: Delete from the OrderItem table
 
+// Need a method to check if user is logged in
+
+
+/** SERVER LISTEN AT PORT 4000 */
+
+// GET: Return a list of all products from the OrderItem table
+app.get("/orderitem", async (req, res) => {
+    try {
+
+        // SQL COMMAND: SELECT * FROM <table>
+        const allOrderItems = await pool.query("SELECT * FROM order_item");
+
+        res.json(allOrderItems.rows) // Only return the first entry from res["rows"] instead of returning everything
+
+    } catch (error) {
+        console.log(error.message)
+    }
+});
+
+// POST: Delete from the OrderItem table
+app.get("/orderitem/delete/:id", async (req, res) => {
+    try {
+        const { id } = req.params
+        // SQL COMMAND: DELETE FROM table WHERE condition --> need to check
+        const todo = await pool.query("DELETE FROM order_item WHERE id = $id", [id]);
+        
+        console.log("Item Deleted")
+    } catch (error) {
+        console.log(error.message)        
+    }
+});
 // Need a method to check if user is logged in
 
 
